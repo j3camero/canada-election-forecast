@@ -24,6 +24,22 @@ province_to_region = {
     'Nunavut': 'TERR',
 }
 
+province_abbreviations = {
+    'Newfoundland and Labrador': 'NL',
+    'Prince Edward Island': 'PE',
+    'Nova Scotia': 'NS',
+    'New Brunswick': 'NB',
+    'Quebec': 'QC',
+    'Ontario': 'ON',
+    'Manitoba': 'MB',
+    'Saskatchewan': 'SK',
+    'Alberta': 'AB',
+    'British Columbia': 'BC',
+    'Yukon': 'YT',
+    'Northwest Territories': 'NT',
+    'Nunavut': 'NU',
+}
+
 def WhichParty(s):
     """If the given string contains a party name, return its abbreviation."""
     for abbreviation, long_name in party_long_names.items():
@@ -36,6 +52,13 @@ def WhichRegion(s):
     for province, region in province_to_region.items():
         if province in s:
             return region
+    return None
+
+def WhichProvince(s):
+    """If the given string contains a province name, return its short form."""
+    for province, abbr in province_abbreviations.items():
+        if province in s:
+            return abbr
     return None
 
 def LoadMatrix(filename):
@@ -96,6 +119,7 @@ with open('table_tableau12.csv') as csv_file:
         party = WhichParty(row['Candidate/Candidat'])
         if not party:
             continue
+        province = WhichProvince(row['Province'])
         region = WhichRegion(row['Province'])
         assert region
         before = regional_support_before[region][party]
@@ -105,12 +129,13 @@ with open('table_tableau12.csv') as csv_file:
         if not riding_number in ridings:
             ridings[riding_number] = {'2011': {}, 'projections': {},
                                       'name': riding_name,
-                                      'number': riding_number}
+                                      'number': riding_number,
+                                      'province': province}
         r = ridings[riding_number]
         r['2011'][party] = popular_vote
         r['projections'][party] = projection
 party_order = ['CON', 'NDP', 'LIB', 'GRN', 'BQ']
-print 'Riding Number,Riding Name,CON,NDP,LIB,GRN,BQ,CON,NDP,LIB,GRN,BQ'
+print 'Province,Riding Number,Riding Name,CON,NDP,LIB,GRN,BQ'
 for r in ridings.values():
     results_2011 = []
     projections = []
@@ -124,5 +149,5 @@ for r in ridings.values():
             projections.append(normalized[party])
         else:
             projections.append(0)
-    row = [r['number'], r['name']] + projections + results_2011
+    row = [r['province'], r['number'], r['name']] + projections
     print ','.join([str(x) for x in row])
