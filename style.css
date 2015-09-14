@@ -1,0 +1,37 @@
+.con {
+    color: #9999FF;
+}
+.lib {
+    color: lightcoral;
+}
+.ndp {
+    color: sandybrown;
+}
+.grn {
+    color:  #2F873E;
+}
+.bq {
+    color: lightskyblue;
+}
+.estimate {
+    text-align: center;
+    width: 40;
+    float: left;
+}
+.riding {
+    width: 100%;
+    text-align: center;
+}
+.ridingname {
+    float: left;
+    text-align: right;
+    width: 50%;
+}
+.sequence {
+    float: right;
+    text-align: left;
+    width: 50%;
+}
+h2 {
+    text-align: center;
+}

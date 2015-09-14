@@ -186,7 +186,7 @@ with open('TRANSPOSITION_338FED.csv') as csv_file:
         r = new_ridings[new_riding_number]
         r['feeders'][old_riding_number] = population_percent
 party_order = ['CON', 'NDP', 'LIB', 'GRN', 'BQ']
-print 'Province,Riding Number,Riding Name,' + ','.join(party_order)
+print 'province,name,number,' + ','.join(p.lower() for p in party_order)
 for r in new_ridings.values():
     projections = {}
     for feeder_number, weight in r['feeders'].items():
@@ -197,5 +197,5 @@ for r in new_ridings.values():
                 projections[party] = 0
             projections[party] += support * weight
     ordered_projections = [projections.get(p, 0) for p in party_order]
-    row = [r['province'], r['number'], r['name']] + ordered_projections
+    row = [r['province'], r['name'], r['number']] + ordered_projections
     print ','.join([str(x) for x in row])
