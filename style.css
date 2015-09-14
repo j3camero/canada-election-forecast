@@ -1,11 +1,11 @@
 .con {
-    color: #9999FF;
+    color: #2360B1;
 }
 .lib {
-    color: lightcoral;
+    color: D71920;
 }
 .ndp {
-    color: sandybrown;
+    color: F37021;
 }
 .grn {
     color:  #2F873E;
@@ -14,11 +14,14 @@
     color: lightskyblue;
 }
 .estimate {
-    text-align: center;
-    width: 40;
     float: left;
+    font-weight: bold;
+    text-align: center;
+    width: 50px;
 }
 .riding {
+    font-size: 18px;
+    padding: 15px 0px;
     width: 100%;
     text-align: center;
 }
@@ -32,6 +35,14 @@
     text-align: left;
     width: 50%;
 }
-h2 {
+.provincetitle {
+    display: inline-block;
+    font-size: 26px;
+    padding-top: 20px;
+}
+body {
+    color:#777;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
     text-align: center;
 }

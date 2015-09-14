@@ -10,10 +10,8 @@
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
   m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
   })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
   ga('create', 'UA-67491457-1', 'auto');
   ga('send', 'pageview');
-
 </script>
 <?php
 require_once 'database.php';
@@ -39,7 +37,7 @@ while ($row = mysql_fetch_assoc($result)) {
     $name = $row["name"];
     if ($province != $previous_province) {
 	$province_name = $province_names[$province];
-        echo "<h2>$province_name</h2>\n";
+        echo "<div class=\"provincetitle\">$province_name</div>\n";
     }
     $previous_province = $province;
     echo "<div class=\"riding\"><span class=\"ridingname\">$name</span>";
