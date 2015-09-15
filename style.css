@@ -13,6 +13,21 @@
 .bq {
     color: lightskyblue;
 }
+.con-proj {
+    background-color: #2360B1;
+}
+.lib-proj {
+    background-color: D71920;
+}
+.ndp-proj {
+    background-color: F37021;
+}
+.grn-proj {
+    background-color:  #2F873E;
+}
+.bq-proj {
+    background-color: lightskyblue;
+}
 .estimate {
     float: left;
     font-weight: bold;
@@ -22,8 +37,8 @@
 .riding {
     font-size: 18px;
     padding: 15px 0px;
-    width: 100%;
     text-align: center;
+    width: 100%;
 }
 .ridingname {
     float: left;
@@ -39,6 +54,17 @@
     display: inline-block;
     font-size: 26px;
     padding-top: 20px;
+}
+.projection {
+    float: left;
+    font-size: 14;
+    font-weight: bold;
+    text-align: center;
+    width: 50px;
+    color: white;
+}
+.strategic {
+    text-decoration: underline;
 }
 body {
     color:#777;

@@ -1,6 +1,8 @@
 import csv
 import sys
 
+from scipy.stats import norm
+
 party_long_names = {
     'CON': 'Conservative/Conservateur',
     'LIB': 'Liberal/Lib',
@@ -118,11 +120,28 @@ def LoadMatrix(filename):
 
 def NormalizeDictVector(d):
     """Adjusts numerical values so they add up to 1."""
-    norm = {}
+    normalized = {}
     divisor = sum(d.values())
     for key in d:
-        norm[key] = d[key] / divisor
-    return norm
+        normalized[key] = d[key] / divisor
+    return normalized
+
+def KeyWithHighestValue(d, forbidden_keys=[]):
+    """Return the key with the highest value.
+
+    Optionally, a list of forbidden keys can be provided. If so, the function
+    will return the key with the next-highest value, but which is not
+    forbidden.
+    """
+    mv = -1
+    mk = None
+    for k, v in d.items():
+        if k in forbidden_keys:
+            continue
+        if v > mv:
+            mk = k
+            mv = v
+    return mk
 
 # Load regional polling data.
 regional_support_before = LoadMatrix('regional_baseline.csv')
@@ -185,17 +204,27 @@ with open('TRANSPOSITION_338FED.csv') as csv_file:
                 'feeders': {}}
         r = new_ridings[new_riding_number]
         r['feeders'][old_riding_number] = population_percent
+
+# Output final stats for each riding.
 party_order = ['CON', 'NDP', 'LIB', 'GRN', 'BQ']
-print 'province,name,number,' + ','.join(p.lower() for p in party_order)
+print ('province,name,number,' +
+       ','.join(p.lower() for p in party_order) +
+       ',projected_winner,strategic_vote,confidence')
 for r in new_ridings.values():
     projections = {}
     for feeder_number, weight in r['feeders'].items():
         feeder = old_ridings[feeder_number]
-        norm = NormalizeDictVector(feeder['projections'])
-        for party, support in norm.items():
+        normalized = NormalizeDictVector(feeder['projections'])
+        for party, support in normalized.items():
             if party not in projections:
                 projections[party] = 0
             projections[party] += support * weight
     ordered_projections = [projections.get(p, 0) for p in party_order]
-    row = [r['province'], r['name'], r['number']] + ordered_projections
+    projected_winner = KeyWithHighestValue(projections)
+    runner_up = KeyWithHighestValue(projections, [projected_winner])
+    strategic_vote = KeyWithHighestValue(projections, ['CON'])
+    gap = projections[projected_winner] - projections[runner_up]
+    confidence = norm.cdf(gap / 0.25)
+    row = ([r['province'], r['name'], r['number']] + ordered_projections +
+           [projected_winner, strategic_vote, confidence])
     print ','.join([str(x) for x in row])

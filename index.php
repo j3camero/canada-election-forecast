@@ -35,6 +35,9 @@ $previous_province = "";
 while ($row = mysql_fetch_assoc($result)) {
     $province = $row["province"];
     $name = $row["name"];
+    $projected_winner = strtolower($row['projected_winner']);
+    $strategic_vote = strtolower($row['strategic_vote']);
+    $confidence = intval(round(100 * $row['confidence']));
     if ($province != $previous_province) {
 	$province_name = $province_names[$province];
         echo "<div class=\"provincetitle\">$province_name</div>\n";
@@ -47,9 +50,14 @@ while ($row = mysql_fetch_assoc($result)) {
 	    continue;
         }
         $support = intval(round(100 * $row[$party]));
-	echo "<span class=\"estimate $party\">$support</span>";
+	$extra_classes = "";
+	if ($party == $strategic_vote) {
+	    $extra_classes .= " strategic";
+        }
+	echo "<span class=\"estimate $party $extra_classes\">$support</span>";
     }
-    echo "</span></div>\n";
+    echo ("<span class=\"projection $projected_winner-proj\">" .
+          "$confidence%</span></span></div>\n");
 }
 mysql_free_result($result);
 mysql_close();
