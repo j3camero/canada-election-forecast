@@ -53,7 +53,7 @@
 .provincetitle {
     display: inline-block;
     font-size: 26px;
-    padding-top: 20px;
+    padding-top: 15px;
 }
 .projection {
     float: left;
@@ -70,6 +70,9 @@
     font-size: 14;
     font-style: oblique;
     padding-top: 20px;
+}
+.barchart {
+    margin-left: 10px;
 }
 body {
     color:#777;

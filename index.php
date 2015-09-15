@@ -1,3 +1,4 @@
+<?php require_once 'database.php'; ?>
 <html>
 <head>
   <title>AnyoneButHarper.net</title>
@@ -13,13 +14,91 @@
   ga('create', 'UA-67491457-1', 'auto');
   ga('send', 'pageview');
 </script>
-<div class="provincetitle">Strategic Vote Lookup for All 338 Federal Ridings
-</div>
+<div class="provincetitle">Canada Election 2015</div>
+<p>If the election were held today, these are the projected seat counts
+  based on data from the last election combined with the latest polls.</p>
+<?php
+$seat_count_by_party = [];
+$max_seat_count = 1;
+$result = query("SELECT projected_winner, COUNT(*) AS seat_count " .
+                "FROM ridings GROUP BY projected_winner");
+while ($row = mysql_fetch_assoc($result)) {
+    $party = strtolower($row['projected_winner']);
+    $seat_count = $row['seat_count'];
+    if ($seat_count > $max_seat_count) {
+        $max_seat_count = $seat_count;
+    }
+    $seat_count_by_party[$party] = $seat_count;
+}
+mysql_free_result($result);
+$party_order = ["con", "lib", "ndp", "grn", "bq"];
+$party_names = [
+    "con" => "Conservative",
+    "lib" => "Liberal",
+    "ndp" => "NDP",
+    "grn" => "Green",
+    "bq" => "Bloc Qu&eacute;becois",
+];
+foreach ($party_order as $party) {
+    if (array_key_exists($party, $seat_count_by_party)) {
+        $seat_count = $seat_count_by_party[$party];
+    } else {
+        $seat_count = 0;
+    }
+    $party_name = $party_names[$party];
+    $bar_length = $seat_count / $max_seat_count * 200;
+    echo ("<div class=\"riding $party\"><span class=\"ridingname\">" .
+          "$party_name</span>" .
+          "<span class=\"sequence\">" .
+          "<span class=\"projection barchart $party-proj\" " .
+          "style=\"width: $bar_length\">&nbsp;</span>" .
+          "<span class=\"estimate $party\">" .
+          "$seat_count</span></span></div>\n");
+}
+?>
+<p></p><!-- Super lazy vertical spacer. -->
 <p>
   Do you want a change of government in the 2015 Canadian election?
   Vote for the strongest candidate in your riding who isn't a member
-  of the current governing party.
+  of the current governing party. If all non-conservatives voted this way in
+  an election held today, the seat counts would be:
 </p>
+<?php
+$seat_count_by_party = [];
+$max_seat_count = 1;
+$result = query("SELECT winner, COUNT(*) AS seat_count FROM " .
+                "(SELECT CASE WHEN ndp+lib+grn+bq > con " .
+                "THEN strategic_vote ELSE 'CON' END AS winner FROM ridings) " .
+                "AS t GROUP BY winner");
+while ($row = mysql_fetch_assoc($result)) {
+    $party = strtolower($row['winner']);
+    $seat_count = $row['seat_count'];
+    if ($seat_count > $max_seat_count) {
+        $max_seat_count = $seat_count;
+    }
+    $seat_count_by_party[$party] = $seat_count;
+}
+mysql_free_result($result);
+foreach ($party_order as $party) {
+    if (array_key_exists($party, $seat_count_by_party)) {
+        $seat_count = $seat_count_by_party[$party];
+    } else {
+        $seat_count = 0;
+    }
+    $party_name = $party_names[$party];
+    $bar_length = $seat_count / $max_seat_count * 200;
+    echo ("<div class=\"riding $party\"><span class=\"ridingname\">" .
+          "$party_name</span>" .
+          "<span class=\"sequence\">" .
+          "<span class=\"projection barchart $party-proj\" " .
+          "style=\"width: $bar_length\">&nbsp;</span>" .
+          "<span class=\"estimate $party\">" .
+          "$seat_count</span></span></div>\n");
+}
+?>
+<div class="footnote">Projections updated Sept 14, 2015</div>
+<div class="provincetitle">Strategic Vote Lookup for All 338 Federal Ridings
+</div>
 <p>
   For your convenience, the strategic vote for all 338 federal ridings is
   listed below. The strategic vote is
@@ -28,9 +107,7 @@
   <a href="http://www.elections.ca/scripts/vis/FindED?L=e&PAGEID=20">
   Elections Canada</a> to look up which riding you're in.
 </p>
-<div class="footnote">Projections updated Sept 14, 2015</div>
 <?php
-require_once 'database.php';
 $province_names = [
     "AB" => "Alberta",
     "BC" => "British Columbia",
@@ -46,8 +123,8 @@ $province_names = [
     "SK" => "Saskatchewan",
     "YT" => "Yukon",
 ];
-$party_order = ["con", "lib", "ndp", "grn", "bq"];
 $previous_province = "";
+$result = query("SELECT * FROM ridings ORDER BY province, name");
 while ($row = mysql_fetch_assoc($result)) {
     $province = $row["province"];
     $name = $row["name"];
