@@ -66,9 +66,19 @@
 .strategic {
     text-decoration: underline;
 }
+.footnote {
+    font-size: 14;
+    font-style: oblique;
+    padding-top: 20px;
+}
 body {
     color:#777;
     font-family: 'Roboto', sans-serif;
     font-weight: 300;
     text-align: center;
+}
+p {
+    margin: auto;
+    max-width: 600;
+    padding-top: 8px;
 }

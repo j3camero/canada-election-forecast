@@ -13,6 +13,22 @@
   ga('create', 'UA-67491457-1', 'auto');
   ga('send', 'pageview');
 </script>
+<div class="provincetitle">Strategic Vote Lookup for All 338 Federal Ridings
+</div>
+<p>
+  Do you want a change of government in the 2015 Canadian election?
+  Vote for the strongest candidate in your riding who isn't a member
+  of the current governing party.
+</p>
+<p>
+  For your convenience, the strategic vote for all 338 federal ridings is
+  listed below. The strategic vote is
+  <span class="strategic">underlined</span>. The coloured boxes are the
+  current  projected winners. Visit
+  <a href="http://www.elections.ca/scripts/vis/FindED?L=e&PAGEID=20">
+  Elections Canada</a> to look up which riding you're in.
+</p>
+<div class="footnote">Projections updated Sept 14, 2015</div>
 <?php
 require_once 'database.php';
 $province_names = [
@@ -39,6 +55,12 @@ while ($row = mysql_fetch_assoc($result)) {
     $strategic_vote = strtolower($row['strategic_vote']);
     $confidence = intval(round(100 * $row['confidence']));
     if ($province != $previous_province) {
+        if ($previous_province != "") {
+            echo ("<div class=\"footnote\">Strategic vote is " .
+                  "<span class=\"strategic\">underlined</span>." .
+                  "The coloured box is the current projected " .
+                  "winner.</div>\n");
+        }
 	$province_name = $province_names[$province];
         echo "<div class=\"provincetitle\">$province_name</div>\n";
     }
