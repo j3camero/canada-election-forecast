@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>AnyoneButHarper.net</title>
+  <meta name="description" content="Strategic voting guide for the 2015 Canadian federal election. Anyone but Harper!" />
   <meta charset="ISO-8859-1">
   <link rel="stylesheet" type="text/css" href="style.css">
 </head>
@@ -99,15 +100,15 @@ foreach ($party_order as $party) {
 <p></p><!-- Super lazy vertical spacer. -->
 <p>
   You can <a href="http://www.elections.ca/content.aspx?section=vot&dir=reg&document=index&lang=e">
-  register to vote</a> in less than 60 seconds.</p>
+  register to vote</a> online. It's fast and easy.</p>
 <div class="footnote">Projections updated Sept 14, 2015</div>
 <div class="provincetitle">Strategic Vote Lookup for All 338 Federal Ridings
 </div>
 <p>
   For your convenience, the strategic vote for all 338 federal ridings is
   listed below. The strategic vote is
-  <span class="strategic">underlined</span>. The coloured boxes are the
-  current  projected winners. Visit
+  <span style="text-decoration:underline">underlined</span>. The coloured
+  boxes are the current  projected winners. Visit
   <a href="http://www.elections.ca/scripts/vis/FindED?L=e&PAGEID=20">
   Elections Canada to look up which riding</a> you're in.
 </p>
@@ -138,7 +139,8 @@ while ($row = mysql_fetch_assoc($result)) {
     if ($province != $previous_province) {
         if ($previous_province != "") {
             echo ("<div class=\"footnote\">Strategic vote is " .
-                  "<span class=\"strategic\">underlined</span>." .
+                  "<span style=\"text-decoration:underline\">" .
+                  "underlined</span>." .
                   "The coloured box is the current projected " .
                   "winner.</div>\n");
         }
@@ -186,5 +188,6 @@ mysql_close();
   under the philosophy that an educated guess is better than no
   information at all.
 </p>
+<div class="footnote">Projections updated Sept 14, 2015</div>
 </body>
 </html>
