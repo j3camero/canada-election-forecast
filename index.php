@@ -1,4 +1,7 @@
-<?php require_once 'database.php'; ?>
+<?php
+require_once 'database.php';
+require_once 'barchart.php';
+?>
 <html>
 <head>
   <title>AnyoneButHarper.net</title>
@@ -19,46 +22,21 @@
 <p>If the election were held today, these are the projected seat counts
   based on the latest polls.</p>
 <?php
-$seat_count_by_party = [];
-$max_seat_count = 1;
-$result = query("SELECT projected_winner, COUNT(*) AS seat_count " .
-                "FROM ridings GROUP BY projected_winner");
-while ($row = mysql_fetch_assoc($result)) {
-    $party = strtolower($row['projected_winner']);
-    $seat_count = $row['seat_count'];
-    if ($seat_count > $max_seat_count) {
-        $max_seat_count = $seat_count;
-    }
-    $seat_count_by_party[$party] = $seat_count;
-}
-mysql_free_result($result);
-require_once 'barchart.php';
-RenderBarChart($seat_count_by_party, 200);
+SqlBarChart("SELECT projected_winner, COUNT(*) AS seat_count " .
+            "FROM ridings GROUP BY projected_winner", 200);
 ?>
 <p></p><!-- Super lazy vertical spacer. -->
 <p>
   Do you want a change of government in the 2015 Canadian election?
   Vote for the strongest candidate in your riding who isn't a member
-  of the current governing party. If all non-conservatives voted this way in
-  an election held today, the seat counts would be:
+  of the current governing party. If all non-conservatives voted this way,
+  the seat counts would be:
 </p>
 <?php
-$seat_count_by_party = [];
-$max_seat_count = 1;
-$result = query("SELECT winner, COUNT(*) AS seat_count FROM " .
-                "(SELECT CASE WHEN ndp+lib+grn+bq > con " .
-                "THEN strategic_vote ELSE 'CON' END AS winner FROM ridings) " .
-                "AS t GROUP BY winner");
-while ($row = mysql_fetch_assoc($result)) {
-    $party = strtolower($row['winner']);
-    $seat_count = $row['seat_count'];
-    if ($seat_count > $max_seat_count) {
-        $max_seat_count = $seat_count;
-    }
-    $seat_count_by_party[$party] = $seat_count;
-}
-mysql_free_result($result);
-RenderBarChart($seat_count_by_party, 200);
+SqlBarChart("SELECT winner, COUNT(*) AS seat_count FROM " .
+            "(SELECT CASE WHEN ndp+lib+grn+bq > con " .
+            "THEN strategic_vote ELSE 'CON' END AS winner FROM ridings) " .
+            "AS t GROUP BY winner", 200);
 ?>
 <p></p><!-- Super lazy vertical spacer. -->
 <p>
@@ -67,13 +45,18 @@ RenderBarChart($seat_count_by_party, 200);
 <div class="footnote">Projections updated Sept 16, 2015</div>
 <div class="provincetitle">Strategic Vote Lookup for All 338 Federal Ridings
 </div>
-<p>
-  For your convenience, the strategic vote for all 338 federal ridings is
-  listed below. The strategic vote is
-  <span style="text-decoration:underline">underlined</span>. The coloured
-  boxes are the current  projected winners. Visit
+<p>Visit Elections Canada to
   <a href="http://www.elections.ca/scripts/vis/FindED?L=e&PAGEID=20">
-  Elections Canada to look up which riding</a> you're in.
+  look up your riding</a> or enter your postal code here:
+</p>
+<form action="postal_code_lookup.php" method="post"><p>
+    <input type="text" name="postal_code" size="8" id="postal_code">
+    <input type="submit" value="Go!" id="submit_button">
+</p></form>
+<p>
+  The strongest opposition candidate is
+  <span style="text-decoration:underline">underlined</span>. The coloured
+  boxes are the current projected winners.
 </p>
 <?php
 $province_names = [
@@ -97,13 +80,14 @@ $result = query("SELECT * FROM ridings ORDER BY province, name");
 while ($row = mysql_fetch_assoc($result)) {
     $province = $row["province"];
     $name = $row["name"];
+    $riding_number = $row["number"];
     $projected_winner = strtolower($row['projected_winner']);
     $strategic_vote = strtolower($row['strategic_vote']);
     $confidence = intval(round(100 * $row['confidence']));
     if ($province != $previous_province) {
         if ($previous_province != "") {
-            echo ("<div class=\"footnote\">Strategic vote is " .
-                  "<span style=\"text-decoration:underline\">" .
+            echo ("<div class=\"footnote\">Strongest opposition candidate " .
+                  "is <span style=\"text-decoration:underline\">" .
                   "underlined</span>." .
                   "The coloured box is the current projected " .
                   "winner.</div>\n");
@@ -112,6 +96,7 @@ while ($row = mysql_fetch_assoc($result)) {
         echo "<div class=\"provincetitle\">$province_name</div>\n";
     }
     $previous_province = $province;
+    echo "<a href=\"riding.php?riding_number=$riding_number\">\n";
     echo "<div class=\"riding\"><span class=\"ridingname\">$name</span>";
     echo "<span class=\"sequence\">";
     foreach ($party_order as $party) {
@@ -126,32 +111,9 @@ while ($row = mysql_fetch_assoc($result)) {
 	echo "<span class=\"estimate $party $extra_classes\">$support</span>";
     }
     echo ("<span class=\"projection $projected_winner-proj\">" .
-          "$confidence%</span></span></div>\n");
+          "$confidence%</span></span></div></a>\n");
 }
 mysql_free_result($result);
 mysql_close();
+include 'more_info.php';
 ?>
-<div class="provincetitle">More Info</div>
-<p>
-  More information about
-  <a href="https://en.wikipedia.org/wiki/Tactical_voting">
-  strategic voting</a>.
-</p>
-<p>
-  All projections and strategic voting recommendations displayed on this page
-  are calculated by an impartial algorithm.
-  <a href="https://github.com/j3camero/canada-election-forecast">
-  The code is on GitHub</a>. You can download and run it on your own
-  computer if you like. The model forecasts the popular vote in all 338
-  federal ridings by starting with the 2011 election results and
-  applying an adjustment calculated from the latest regional polling data.
-</p>
-<p>
-  Election forecasting is not an exact science. Many of the riding projections
-  listed on this page will turn out to be wrong. The data is provided
-  under the philosophy that an educated guess is better than no
-  information at all.
-</p>
-<div class="footnote">Projections updated Sept 16, 2015</div>
-</body>
-</html>

@@ -28,4 +28,16 @@ function RenderBarChart($data, $width_pixels) {
     }
 }
 
+function SqlBarChart($sql, $width_pixels) {
+    $result = query($sql);
+    $data = [];
+    while ($row = mysql_fetch_row($result)) {
+        $key = strtolower($row[0]);
+        $value = $row[1];
+        $data[$key] = $value;
+    }
+    mysql_free_result($result);
+    RenderBarChart($data, $width_pixels);
+}
+
 ?>

@@ -35,6 +35,7 @@
     width: 50px;
 }
 .riding {
+    color: #777;
     font-size: 18px;
     padding: 15px 0px;
     text-align: center;
@@ -85,4 +86,20 @@ p {
     margin: auto;
     max-width: 600;
     padding-top: 8px;
+}
+#postal_code {
+    color:#777;
+    font-family: 'Roboto', sans-serif;
+    font-size: 26;
+    font-weight: 300;
+    padding: 10px;
+    text-align: center;
+}
+#submit_button {
+    color:#777;
+    font-family: 'Roboto', sans-serif;
+    font-size: 26;
+    font-weight: 300;
+    padding: 10px;
+    text-align: center;
 }
