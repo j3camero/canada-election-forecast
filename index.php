@@ -32,30 +32,8 @@ while ($row = mysql_fetch_assoc($result)) {
     $seat_count_by_party[$party] = $seat_count;
 }
 mysql_free_result($result);
-$party_order = ["con", "lib", "ndp", "grn", "bq"];
-$party_names = [
-    "con" => "Conservative",
-    "lib" => "Liberal",
-    "ndp" => "NDP",
-    "grn" => "Green",
-    "bq" => "Bloc Qu&eacute;becois",
-];
-foreach ($party_order as $party) {
-    if (array_key_exists($party, $seat_count_by_party)) {
-        $seat_count = $seat_count_by_party[$party];
-    } else {
-        $seat_count = 0;
-    }
-    $party_name = $party_names[$party];
-    $bar_length = $seat_count / $max_seat_count * 200;
-    echo ("<div class=\"riding $party\"><span class=\"ridingname\">" .
-          "$party_name</span>" .
-          "<span class=\"sequence\">" .
-          "<span class=\"projection barchart $party-proj\" " .
-          "style=\"width: $bar_length\">&nbsp;</span>" .
-          "<span class=\"estimate $party\">" .
-          "$seat_count</span></span></div>\n");
-}
+require_once 'barchart.php';
+RenderBarChart($seat_count_by_party, 200);
 ?>
 <p></p><!-- Super lazy vertical spacer. -->
 <p>
@@ -80,22 +58,7 @@ while ($row = mysql_fetch_assoc($result)) {
     $seat_count_by_party[$party] = $seat_count;
 }
 mysql_free_result($result);
-foreach ($party_order as $party) {
-    if (array_key_exists($party, $seat_count_by_party)) {
-        $seat_count = $seat_count_by_party[$party];
-    } else {
-        $seat_count = 0;
-    }
-    $party_name = $party_names[$party];
-    $bar_length = $seat_count / $max_seat_count * 200;
-    echo ("<div class=\"riding $party\"><span class=\"ridingname\">" .
-          "$party_name</span>" .
-          "<span class=\"sequence\">" .
-          "<span class=\"projection barchart $party-proj\" " .
-          "style=\"width: $bar_length\">&nbsp;</span>" .
-          "<span class=\"estimate $party\">" .
-          "$seat_count</span></span></div>\n");
-}
+RenderBarChart($seat_count_by_party, 200);
 ?>
 <p></p><!-- Super lazy vertical spacer. -->
 <p>
@@ -128,6 +91,7 @@ $province_names = [
     "SK" => "Saskatchewan",
     "YT" => "Yukon",
 ];
+$party_order = ["con", "lib", "ndp", "grn", "bq"];
 $previous_province = "";
 $result = query("SELECT * FROM ridings ORDER BY province, name");
 while ($row = mysql_fetch_assoc($result)) {
