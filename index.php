@@ -42,7 +42,7 @@ SqlBarChart("SELECT winner, COUNT(*) AS seat_count FROM " .
 <p>
   You can <a href="http://www.elections.ca/content.aspx?section=vot&dir=reg&document=index&lang=e">
   register to vote</a> online. It's fast and easy.</p>
-<div class="footnote">Projections updated Sept 16, 2015</div>
+<div class="footnote">Projections updated Sept 17, 2015</div>
 <div class="provincetitle">Strategic Vote Lookup for All 338 Federal Ridings
 </div>
 <p>Visit Elections Canada to
@@ -96,7 +96,6 @@ while ($row = mysql_fetch_assoc($result)) {
         echo "<div class=\"provincetitle\">$province_name</div>\n";
     }
     $previous_province = $province;
-    echo "<a href=\"riding.php?riding_number=$riding_number\">\n";
     echo "<div class=\"riding\"><span class=\"ridingname\">$name</span>";
     echo "<span class=\"sequence\">";
     foreach ($party_order as $party) {
@@ -111,7 +110,7 @@ while ($row = mysql_fetch_assoc($result)) {
 	echo "<span class=\"estimate $party $extra_classes\">$support</span>";
     }
     echo ("<span class=\"projection $projected_winner-proj\">" .
-          "$confidence%</span></span></div></a>\n");
+          "$confidence%</span></span></div>\n");
 }
 mysql_free_result($result);
 mysql_close();
