@@ -19,6 +19,6 @@
   under the philosophy that an educated guess is better than no
   information at all.
 </p>
-<div class="footnote">Projections updated Sept 18, 2015</div>
+<div class="footnote">Projections updated Sept 19, 2015</div>
 </body>
 </html>
