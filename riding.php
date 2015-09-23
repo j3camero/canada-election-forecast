@@ -16,6 +16,7 @@ while ($row = mysql_fetch_assoc($result)) {
     $projected_winner = strtoupper($row['projected_winner']);
     $strategic_vote = strtoupper($row['strategic_vote']);
     $confidence = intval(round(100 * $row['confidence']));
+    $turnout_2011 = intval(round(100 * $row['turnout_2011']));
     $data['con'] = intval(round(100 * $row['con']));
     $data['lib'] = intval(round(100 * $row['lib']));
     $data['ndp'] = intval(round(100 * $row['ndp']));
@@ -53,6 +54,9 @@ mysql_free_result($result);
   Strongest opposition candidate &mdash;
   <span class="<?php echo $strategic_vote; ?>"
         style="font-weight:bold"><?php echo $strategic_vote; ?></span>
+</p>
+<p>
+  Voter turnout in the last election &mdash; <?php echo $turnout_2011  ?>%
 </p>
 <p>If the election were held today, this is the projected popular vote in
   the riding of <?php echo $riding_name; ?>, based on the latest polls.</p>

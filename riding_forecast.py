@@ -196,20 +196,27 @@ with open('TRANSPOSITION_338FED.csv') as csv_file:
         population_transferred = float(
             row['Population transferred to 2013 FED'])
         population_percent = population_transferred / population_2013
+        all_votes = row['All votes']
+        electors = row['Electors on lists']
         if new_riding_number not in new_ridings:
             new_ridings[new_riding_number] = {
                 'name': new_riding_name,
                 'number': new_riding_number,
                 'province': province,
-                'feeders': {}}
+                'feeders': {},
+                'total_votes_2011': 0,
+                'total_electors_2011': 0,
+                'population': int(population_2013)}
         r = new_ridings[new_riding_number]
         r['feeders'][old_riding_number] = population_percent
+        r['total_votes_2011'] += int(all_votes)
+        r['total_electors_2011'] += int(electors)
 
 # Output final stats for each riding.
 party_order = ['CON', 'NDP', 'LIB', 'GRN', 'BQ']
 print ('province,name,number,' +
        ','.join(p.lower() for p in party_order) +
-       ',projected_winner,strategic_vote,confidence')
+       ',projected_winner,strategic_vote,confidence,turnout_2011')
 for r in new_ridings.values():
     projections = {}
     for feeder_number, weight in r['feeders'].items():
@@ -225,6 +232,7 @@ for r in new_ridings.values():
     strategic_vote = KeyWithHighestValue(projections, ['CON'])
     gap = projections[projected_winner] - projections[runner_up]
     confidence = norm.cdf(gap / 0.25)
+    turnout = float(r['total_votes_2011']) / r['total_electors_2011']
     row = ([r['province'], r['name'], r['number']] + ordered_projections +
-           [projected_winner, strategic_vote, confidence])
+           [projected_winner, strategic_vote, confidence, turnout])
     print ','.join([str(x) for x in row])
