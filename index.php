@@ -96,7 +96,9 @@ while ($row = mysql_fetch_assoc($result)) {
         echo "<div class=\"provincetitle\">$province_name</div>\n";
     }
     $previous_province = $province;
-    echo "<div class=\"riding\"><span class=\"ridingname\">$name</span>";
+    echo "<div class=\"riding\">\n";
+    echo ("<a href=\"riding.php?riding_number=$riding_number\" " .
+          "class=\"ridingname\">$name</a>\n");
     echo "<span class=\"sequence\">";
     foreach ($party_order as $party) {
         if ($party == "bq" && $province != "QC") {
