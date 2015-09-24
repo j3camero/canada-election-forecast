@@ -1,5 +1,6 @@
 import csv
 import sys
+import unicodedata
 
 from scipy.stats import norm
 
@@ -143,6 +144,10 @@ def KeyWithHighestValue(d, forbidden_keys=[]):
             mv = v
     return mk
 
+def RemoveAccentsFromText(s):
+    return ''.join((c for c in unicodedata.normalize('NFD', s)
+                    if unicodedata.category(c) != 'Mn'))
+
 # Load regional polling data.
 regional_support_before = LoadMatrix('regional_baseline.csv')
 regional_poll_averages = LoadMatrix('regional_poll_averages.csv')
@@ -233,6 +238,7 @@ for r in new_ridings.values():
     gap = projections[projected_winner] - projections[runner_up]
     confidence = norm.cdf(gap / 0.25)
     turnout = float(r['total_votes_2011']) / r['total_electors_2011']
-    row = ([r['province'], r['name'], r['number']] + ordered_projections +
+    riding_name = r['name']
+    row = ([r['province'], riding_name, r['number']] + ordered_projections +
            [projected_winner, strategic_vote, confidence, turnout])
     print ','.join([str(x) for x in row])
