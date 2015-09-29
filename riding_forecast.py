@@ -4,12 +4,14 @@ import unicodedata
 
 from scipy.stats import norm
 
+from regional_poll_interpolator import RegionalPollInterpolator
+
 party_long_names = {
-    'CON': 'Conservative/Conservateur',
-    'LIB': 'Liberal/Lib',
-    'NDP': 'NDP-New Democratic Party/NPD-Nouveau Parti d',
-    'GRN': 'Green Party/Parti Vert',
-    'BQ': 'Bloc Qu',
+    'cpc': 'Conservative/Conservateur',
+    'lpc': 'Liberal/Lib',
+    'ndp': 'NDP-New Democratic Party/NPD-Nouveau Parti d',
+    'gpc': 'Green Party/Parti Vert',
+    'bq': 'Bloc Qu',
 }
 
 province_to_region = {
@@ -19,13 +21,13 @@ province_to_region = {
     'New Brunswick': 'ATL',
     'Quebec': 'QC',
     'Ontario': 'ON',
-    'Manitoba': 'SKMB',
-    'Saskatchewan': 'SKMB',
+    'Manitoba': 'SK_MB',
+    'Saskatchewan': 'SK_MB',
     'Alberta': 'AB',
     'British Columbia': 'BC',
-    'Yukon': 'TERR',
-    'Northwest Territories': 'TERR',
-    'Nunavut': 'TERR',
+    'Yukon': 'Canada',
+    'Northwest Territories': 'Canada',
+    'Nunavut': 'Canada',
 }
 
 province_abbreviations = {
@@ -150,7 +152,8 @@ def RemoveAccentsFromText(s):
 
 # Load regional polling data.
 regional_support_before = LoadMatrix('regional_baseline.csv')
-regional_poll_averages = LoadMatrix('regional_poll_averages.csv')
+interpolator = RegionalPollInterpolator()
+interpolator.LoadFromCsv('regional_poll_averages.csv')
 
 # Load and process per-riding election results from 2011.
 old_ridings = {}
@@ -167,7 +170,7 @@ with open('table_tableau12.csv') as csv_file:
         region = WhichRegion(row['Province'])
         assert region
         before = regional_support_before[region][party]
-        after = regional_poll_averages[region][party]
+        after = interpolator.GetMostRecent(region, party)
         projected_gain = after / before
         projection = popular_vote * projected_gain
         if not riding_number in old_ridings:
@@ -218,9 +221,16 @@ with open('TRANSPOSITION_338FED.csv') as csv_file:
         r['total_electors_2011'] += int(electors)
 
 # Output final stats for each riding.
-party_order = ['CON', 'NDP', 'LIB', 'GRN', 'BQ']
+party_order = ['cpc', 'ndp', 'lpc', 'gpc', 'bq']
+readable_party_names = {
+    'cpc': 'CON',
+    'lpc': 'LIB',
+    'ndp': 'NDP',
+    'gpc': 'GRN',
+    'bq': 'BQ',
+}
 print ('province,name,number,' +
-       ','.join(p.lower() for p in party_order) +
+       ','.join(readable_party_names[p].lower() for p in party_order) +
        ',projected_winner,strategic_vote,confidence,turnout_2011')
 for r in new_ridings.values():
     projections = {}
@@ -234,8 +244,10 @@ for r in new_ridings.values():
     ordered_projections = [projections.get(p, 0) for p in party_order]
     projected_winner = KeyWithHighestValue(projections)
     runner_up = KeyWithHighestValue(projections, [projected_winner])
-    strategic_vote = KeyWithHighestValue(projections, ['CON'])
+    strategic_vote = KeyWithHighestValue(projections, ['cpc'])
     gap = projections[projected_winner] - projections[runner_up]
+    projected_winner = readable_party_names[projected_winner]
+    strategic_vote = readable_party_names[strategic_vote]
     confidence = norm.cdf(gap / 0.25)
     turnout = float(r['total_votes_2011']) / r['total_electors_2011']
     riding_name = r['name']
