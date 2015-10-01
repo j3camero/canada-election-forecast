@@ -22,6 +22,7 @@ while ($row = mysql_fetch_assoc($result)) {
     $data['ndp'] = intval(round(100 * $row['ndp']));
     $data['grn'] = intval(round(100 * $row['grn']));
     $data['bq'] = intval(round(100 * $row['bq']));
+    $data['oth'] = intval(round(100 * $row['oth']));
 }
 mysql_free_result($result);
 ?>

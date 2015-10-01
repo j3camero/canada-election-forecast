@@ -13,6 +13,9 @@
 .bq {
     color: lightskyblue;
 }
+.oth {
+    color: #777;
+}
 .con-proj {
     background-color: #2360B1;
 }
@@ -27,6 +30,9 @@
 }
 .bq-proj {
     background-color: lightskyblue;
+}
+.oth-proj {
+    background-color: #777;
 }
 .estimate {
     float: left;

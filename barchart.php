@@ -1,13 +1,14 @@
 <?php
 
 function RenderBarChart($data, $width_pixels) {
-    $party_order = ["con", "lib", "ndp", "grn", "bq"];
+    $party_order = ["con", "lib", "ndp", "grn", "bq", "oth"];
     $party_names = [
         "con" => "Conservative",
         "lib" => "Liberal",
         "ndp" => "NDP",
         "grn" => "Green",
         "bq" => "Bloc Qu&eacute;becois",
+        "oth" => "Independent",
     ];
     $max_value = max($data);
     foreach ($party_order as $party) {

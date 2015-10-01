@@ -34,7 +34,7 @@ SqlBarChart("SELECT projected_winner, COUNT(*) AS seat_count " .
 </p>
 <?php
 SqlBarChart("SELECT winner, COUNT(*) AS seat_count FROM " .
-            "(SELECT CASE WHEN ndp+lib+grn+bq > con " .
+            "(SELECT CASE WHEN ndp+lib+grn+bq+oth > con " .
             "THEN strategic_vote ELSE 'CON' END AS winner FROM ridings) " .
             "AS t GROUP BY winner", 200);
 ?>
@@ -74,7 +74,7 @@ $province_names = [
     "SK" => "Saskatchewan",
     "YT" => "Yukon",
 ];
-$party_order = ["con", "lib", "ndp", "grn", "bq"];
+$party_order = ["con", "lib", "ndp", "grn", "bq", "oth"];
 $previous_province = "";
 $result = query("SELECT * FROM ridings ORDER BY province, name");
 while ($row = mysql_fetch_assoc($result)) {
