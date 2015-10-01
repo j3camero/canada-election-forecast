@@ -4,6 +4,7 @@ import datetime
 from scipy.stats import norm
 
 from regional_poll_interpolator import RegionalPollInterpolator
+import riding_poll_model
 
 party_long_names = {
     'cpc': 'Conservative/Conservateur',
@@ -11,6 +12,7 @@ party_long_names = {
     'ndp': 'NDP-New Democratic Party/NPD-Nouveau Parti d',
     'gpc': 'Green Party/Parti Vert',
     'bq': 'Bloc Qu',
+    'oth': 'Independent',
 }
 
 province_to_region = {
@@ -129,7 +131,10 @@ with open('table_tableau12.csv') as csv_file:
         assert region
         before = interpolator.Interpolate(region, party, baseline_date)
         after = interpolator.GetMostRecent(region, party)
-        projected_gain = after / before
+        if before > 0:
+            projected_gain = after / before
+        else:
+            projected_gain = 1
         projection = popular_vote * projected_gain
         if not riding_number in old_ridings:
             old_ridings[riding_number] = {
@@ -179,19 +184,24 @@ with open('TRANSPOSITION_338FED.csv') as csv_file:
         r['total_electors_2011'] += int(electors)
 
 # Output final stats for each riding.
-party_order = ['cpc', 'ndp', 'lpc', 'gpc', 'bq']
+party_order = ['cpc', 'ndp', 'lpc', 'gpc', 'bq', 'oth']
 readable_party_names = {
     'cpc': 'CON',
     'lpc': 'LIB',
     'ndp': 'NDP',
     'gpc': 'GRN',
     'bq': 'BQ',
+    'oth': 'OTH',
 }
 print ('province,name,number,' +
        ','.join(readable_party_names[p].lower() for p in party_order) +
        ',projected_winner,strategic_vote,confidence,turnout_2011')
 for r in new_ridings.values():
     projections = {}
+    riding_name = r['name']
+    riding_number = str(r['number'])
+    province = r['province']
+    # Calculate projections for this riding by mixing old-riding projections.
     for feeder_number, weight in r['feeders'].items():
         feeder = old_ridings[feeder_number]
         normalized = NormalizeDictVector(feeder['projections'])
@@ -199,6 +209,9 @@ for r in new_ridings.values():
             if party not in projections:
                 projections[party] = 0
             projections[party] += support * weight
+    # Upgrade the projections for ridings with local polling data available.
+    projections = riding_poll_model.projections_by_riding_number.get(
+                      riding_number, projections)
     ordered_projections = [projections.get(p, 0) for p in party_order]
     projected_winner = KeyWithHighestValue(projections)
     runner_up = KeyWithHighestValue(projections, [projected_winner])
@@ -208,7 +221,6 @@ for r in new_ridings.values():
     strategic_vote = readable_party_names[strategic_vote]
     confidence = norm.cdf(gap / 0.25)
     turnout = float(r['total_votes_2011']) / r['total_electors_2011']
-    riding_name = r['name']
-    row = ([r['province'], riding_name, r['number']] + ordered_projections +
+    row = ([province, riding_name, riding_number] + ordered_projections +
            [projected_winner, strategic_vote, confidence, turnout])
     print ','.join([str(x) for x in row])

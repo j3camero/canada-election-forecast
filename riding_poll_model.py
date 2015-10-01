@@ -390,6 +390,10 @@ def DictVectorToString(vector):
         strings.append('%s %.2f' % (k, v))
     return ' '.join(strings)
 
+# The projections based on riding polls are stored in here, keyed by riding
+# number as a string.
+projections_by_riding_number = {}
+
 # Load the poll data interpolator.
 interpolator = RegionalPollInterpolator()
 interpolator.LoadFromCsv('regional_poll_averages.csv')
@@ -450,7 +454,6 @@ for riding_title, table in zip(riding_titles, tables):
                               region, parsed_date, party_numbers)
         age_seconds = (datetime.datetime.now() - parsed_date).total_seconds()
         age_days = float(age_seconds) / (24 * 3600)
-        #age_months = age_days / 30.5
         age_years = age_days / 365.25
         weight = sample_size * (0.25 ** age_years)
         total_weight += weight
@@ -458,16 +461,6 @@ for riding_title, table in zip(riding_titles, tables):
             if party not in weighted_projection:
                 weighted_projection[party] = 0
             weighted_projection[party] += weight * support
-        if riding_name == 'Calgary Centre':
-            print 'riding:', riding_name, riding_number, region
-            print 'poll:', DictVectorToString(party_numbers)
-            print 'projection:', DictVectorToString(poll_projection)
-            print 'date:', parsed_date, 'weight:', weight, 'sample:', sample_size
-            print ''
     for party in weighted_projection:
         weighted_projection[party] /= total_weight
-    if riding_name == 'Calgary Centre':
-        print 'riding:', riding_name, riding_number, region
-        print 'projection:', DictVectorToString(weighted_projection)
-        print 'total_weight:', total_weight
-        print ''
+    projections_by_riding_number[str(riding_number)] = weighted_projection
