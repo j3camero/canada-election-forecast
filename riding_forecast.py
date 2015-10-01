@@ -131,7 +131,7 @@ with open('table_tableau12.csv') as csv_file:
         assert region
         before = interpolator.Interpolate(region, party, baseline_date)
         after = interpolator.GetMostRecent(region, party)
-        if before > 0:
+        if before > 2:  # As in 2% not 200%
             projected_gain = after / before
         else:
             projected_gain = 1
