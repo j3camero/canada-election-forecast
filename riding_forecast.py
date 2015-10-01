@@ -1,6 +1,5 @@
 import csv
-import sys
-import unicodedata
+import datetime
 
 from scipy.stats import norm
 
@@ -83,44 +82,6 @@ def WhichProvince(s):
             return abbr
     return None
 
-def LoadMatrix(filename):
-    """Loads a table of numbers from a CSV file.
-
-    The table of numbers should have labeled columns and rows. The first row
-    of the CSV file will contain column labels. The first cell in each row
-    thereafter will be a label for that row. The first column of the first
-    row must be blank. All other cells in the CSV file should contain numbers.
-
-    The returned table is indexed first by column label then by row label.
-
-    Example file format:
-    ,ColumnOne,ColumnTwo
-    RowOne,1,2
-    RowTwo,3,4
-
-    Example usage:
-    m = LoadMatrix('example.csv')
-    print m['ColumnTwo']['RowOne']
-    # Prints 2
-    """
-    matrix = {}
-    with open(filename) as csv_file:
-        reader = csv.DictReader(csv_file)
-        for row in reader:
-            row_label = row['']
-            for column_label, value in row.items():
-                if not column_label:
-                    continue
-                if column_label not in matrix:
-                    matrix[column_label] = {}
-                try:
-                    value = float(value)
-                except:
-                    # Blank values default to zero.
-                    value = 0
-                matrix[column_label][row_label] = value
-    return matrix
-
 def NormalizeDictVector(d):
     """Adjusts numerical values so they add up to 1."""
     normalized = {}
@@ -146,14 +107,11 @@ def KeyWithHighestValue(d, forbidden_keys=[]):
             mv = v
     return mk
 
-def RemoveAccentsFromText(s):
-    return ''.join((c for c in unicodedata.normalize('NFD', s)
-                    if unicodedata.category(c) != 'Mn'))
-
 # Load regional polling data.
-regional_support_before = LoadMatrix('regional_baseline.csv')
 interpolator = RegionalPollInterpolator()
 interpolator.LoadFromCsv('regional_poll_averages.csv')
+interpolator.LoadFromCsv('regional_baseline.csv')
+baseline_date = datetime.datetime(2011, 5, 2)
 
 # Load and process per-riding election results from 2011.
 old_ridings = {}
@@ -169,7 +127,7 @@ with open('table_tableau12.csv') as csv_file:
         province = WhichProvince(row['Province'])
         region = WhichRegion(row['Province'])
         assert region
-        before = regional_support_before[region][party]
+        before = interpolator.Interpolate(region, party, baseline_date)
         after = interpolator.GetMostRecent(region, party)
         projected_gain = after / before
         projection = popular_vote * projected_gain

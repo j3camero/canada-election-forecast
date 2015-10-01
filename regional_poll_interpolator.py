@@ -2,10 +2,13 @@ import csv
 import datetime
 
 class RegionalPollInterpolator(object):
+    """Routines for interpolating a series of poll data."""
+
     def __init__(self):
         self.series_by_region_then_party = dict()
 
     def LoadFromCsv(self, csv_filename):
+        """Adds data from a csv file. Can be called multiple times."""
         with open(csv_filename) as csv_file:
             csv_reader = csv.reader(csv_file)
             for row in csv_reader:
@@ -24,6 +27,7 @@ class RegionalPollInterpolator(object):
                 series.sort()
 
     def Interpolate(self, region, party, date):
+        """Interpolate the loaded poll data."""
         try:
             series = self.series_by_region_then_party[region][party]
         except:
@@ -41,7 +45,34 @@ class RegionalPollInterpolator(object):
         return 0
 
     def GetMostRecent(self, region, party):
+        """Returns the most recent data point for a region and party."""
         try:
             return self.series_by_region_then_party[region][party][-1][1]
         except:
             return 0
+
+    def UniformSwingProjection(self, region, begin_date, begin_vector):
+        """Projects forward a vector of popular votes."""
+        projection = {}
+        for party in begin_vector:
+            old_poll = self.Interpolate(region, party, begin_date)
+            new_poll = self.GetMostRecent(region, party)
+            projection[party] = begin_vector[party] + new_poll - old_poll
+        return projection
+
+    def ProportionalSwingProjection(self, region, begin_date, begin_vector):
+        """Projects forward a vector of popular votes."""
+        projection = {}
+        for party in begin_vector:
+            old_poll = self.Interpolate(region, party, begin_date)
+            new_poll = self.GetMostRecent(region, party)
+            if old_poll > 0:
+                gain = new_poll / old_poll
+            else:
+                gain = 1
+            projection[party] = begin_vector[party] * gain
+        # Normalize so the projections sum to 1.
+        divisor = sum(projection.values())
+        for k, v in projection.items():
+            projection[k] = v / divisor
+        return projection
