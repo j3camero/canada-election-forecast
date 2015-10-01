@@ -193,34 +193,38 @@ readable_party_names = {
     'bq': 'BQ',
     'oth': 'OTH',
 }
-print ('province,name,number,' +
-       ','.join(readable_party_names[p].lower() for p in party_order) +
-       ',projected_winner,strategic_vote,confidence,turnout_2011')
-for r in new_ridings.values():
-    projections = {}
-    riding_name = r['name']
-    riding_number = str(r['number'])
-    province = r['province']
-    # Calculate projections for this riding by mixing old-riding projections.
-    for feeder_number, weight in r['feeders'].items():
-        feeder = old_ridings[feeder_number]
-        normalized = NormalizeDictVector(feeder['projections'])
-        for party, support in normalized.items():
-            if party not in projections:
-                projections[party] = 0
-            projections[party] += support * weight
-    # Upgrade the projections for ridings with local polling data available.
-    projections = riding_poll_model.projections_by_riding_number.get(
-                      riding_number, projections)
-    ordered_projections = [projections.get(p, 0) for p in party_order]
-    projected_winner = KeyWithHighestValue(projections)
-    runner_up = KeyWithHighestValue(projections, [projected_winner])
-    strategic_vote = KeyWithHighestValue(projections, ['cpc'])
-    gap = projections[projected_winner] - projections[runner_up]
-    projected_winner = readable_party_names[projected_winner]
-    strategic_vote = readable_party_names[strategic_vote]
-    confidence = norm.cdf(gap / 0.25)
-    turnout = float(r['total_votes_2011']) / r['total_electors_2011']
-    row = ([province, riding_name, riding_number] + ordered_projections +
-           [projected_winner, strategic_vote, confidence, turnout])
-    print ','.join([str(x) for x in row])
+with open('riding_forecasts.csv', 'wb') as csv_file:
+    csv_writer = csv.writer(csv_file)
+    csv_writer.writerow(
+        ['province', 'name', 'number,'] +
+        [readable_party_names[p].lower() for p in party_order] +
+        ['projected_winner', 'strategic_vote', 'confidence', 'turnout_2011'])
+    for r in new_ridings.values():
+        projections = {}
+        riding_name = r['name']
+        riding_number = str(r['number'])
+        province = r['province']
+        # Project this riding by mixing old-riding projections.
+        for feeder_number, weight in r['feeders'].items():
+            feeder = old_ridings[feeder_number]
+            normalized = NormalizeDictVector(feeder['projections'])
+            for party, support in normalized.items():
+                if party not in projections:
+                    projections[party] = 0
+                projections[party] += support * weight
+        # Upgrade the projections for ridings that have local polling data.
+        projections = riding_poll_model.projections_by_riding_number.get(
+                          riding_number, projections)
+        ordered_projections = [projections.get(p, 0) for p in party_order]
+        projected_winner = KeyWithHighestValue(projections)
+        runner_up = KeyWithHighestValue(projections, [projected_winner])
+        strategic_vote = KeyWithHighestValue(projections, ['cpc'])
+        gap = projections[projected_winner] - projections[runner_up]
+        projected_winner = readable_party_names[projected_winner]
+        strategic_vote = readable_party_names[strategic_vote]
+        confidence = norm.cdf(gap / 0.25)
+        turnout = float(r['total_votes_2011']) / r['total_electors_2011']
+        csv_writer.writerow([province, riding_name, riding_number] +
+                            ordered_projections +
+                            [projected_winner, strategic_vote, confidence,
+                             turnout])
