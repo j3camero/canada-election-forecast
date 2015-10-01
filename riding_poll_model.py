@@ -22,8 +22,8 @@ province_code_to_region = {
     '13': 'ATL',
     '24': 'QC',
     '35': 'ON',
-    '46': 'MB_SK',
-    '47': 'MB_SK',
+    '46': 'SK_MB',
+    '47': 'SK_MB',
     '48': 'AB',
     '59': 'BC',
     '60': 'Canada',
@@ -424,6 +424,8 @@ for riding_title, table in zip(riding_titles, tables):
         if column_title in party_columns:
             party_columns[column_title] = column_index
     assert date_column >= 0
+    weighted_projection = {}
+    total_weight = 0
     data_rows = rows[1:]
     for row in data_rows:
         columns = row.find_all('td')
@@ -437,7 +439,24 @@ for riding_title, table in zip(riding_titles, tables):
         parsed_date = datetime.datetime.strptime(date_string, '%B %d, %Y')
         poll_projection = interpolator.ProportionalSwingProjection(
                               region, parsed_date, party_numbers)
-        print 'riding:', riding_name, riding_number, region
-        print 'date:', parsed_date
-        print 'poll:', DictVectorToString(party_numbers)
-        print 'projection:', DictVectorToString(poll_projection)
+        age_seconds = (datetime.datetime.now() - parsed_date).total_seconds()
+        age_days = float(age_seconds) / (24 * 3600)
+        age_months = age_days / 30.5
+        weight = 0.5 ** age_months
+        total_weight += weight
+        for party, support in poll_projection.items():
+            if party not in weighted_projection:
+                weighted_projection[party] = 0
+            weighted_projection[party] += weight * support
+        #print 'riding:', riding_name, riding_number, region
+        #print 'date:', parsed_date
+        #print 'poll:', DictVectorToString(party_numbers)
+        #print 'projection:', DictVectorToString(poll_projection)
+        #print 'weight:', weight
+        #print ''
+    for party in weighted_projection:
+        weighted_projection[party] /= total_weight
+    print 'riding:', riding_name, riding_number, region
+    print 'projection:', DictVectorToString(weighted_projection)
+    print 'total_weight:', total_weight
+    print ''
