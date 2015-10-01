@@ -417,13 +417,17 @@ for riding_title, table in zip(riding_titles, tables):
     header_row = rows[0]
     party_columns = {n: -1 for n in party_names}
     date_column = -1
+    sample_size_column = -1
     for column_index, column_title in enumerate(header_row.find_all('th')):
         column_title = column_title.get_text().replace('\n', ' ')
         if column_title == 'Last Date of Polling':
             date_column = column_index
+        if column_title.startswith('Sample Size'):
+            sample_size_column = column_index
         if column_title in party_columns:
             party_columns[column_title] = column_index
     assert date_column >= 0
+    assert sample_size_column >= 0
     weighted_projection = {}
     total_weight = 0
     data_rows = rows[1:]
@@ -437,26 +441,33 @@ for riding_title, table in zip(riding_titles, tables):
                 party_numbers[party_code] = float(number_string) / 100
         date_string = columns[date_column].find('span', '').get_text()
         parsed_date = datetime.datetime.strptime(date_string, '%B %d, %Y')
+        sample_size_string = columns[sample_size_column].get_text().strip()
+        if sample_size_string:
+            sample_size = float(sample_size_string.replace(',', ''))
+        else:
+            sample_size = 0
         poll_projection = interpolator.ProportionalSwingProjection(
                               region, parsed_date, party_numbers)
         age_seconds = (datetime.datetime.now() - parsed_date).total_seconds()
         age_days = float(age_seconds) / (24 * 3600)
-        age_months = age_days / 30.5
-        weight = 0.5 ** age_months
+        #age_months = age_days / 30.5
+        age_years = age_days / 365.25
+        weight = sample_size * (0.25 ** age_years)
         total_weight += weight
         for party, support in poll_projection.items():
             if party not in weighted_projection:
                 weighted_projection[party] = 0
             weighted_projection[party] += weight * support
-        #print 'riding:', riding_name, riding_number, region
-        #print 'date:', parsed_date
-        #print 'poll:', DictVectorToString(party_numbers)
-        #print 'projection:', DictVectorToString(poll_projection)
-        #print 'weight:', weight
-        #print ''
+        if riding_name == 'Calgary Centre':
+            print 'riding:', riding_name, riding_number, region
+            print 'poll:', DictVectorToString(party_numbers)
+            print 'projection:', DictVectorToString(poll_projection)
+            print 'date:', parsed_date, 'weight:', weight, 'sample:', sample_size
+            print ''
     for party in weighted_projection:
         weighted_projection[party] /= total_weight
-    print 'riding:', riding_name, riding_number, region
-    print 'projection:', DictVectorToString(weighted_projection)
-    print 'total_weight:', total_weight
-    print ''
+    if riding_name == 'Calgary Centre':
+        print 'riding:', riding_name, riding_number, region
+        print 'projection:', DictVectorToString(weighted_projection)
+        print 'total_weight:', total_weight
+        print ''
