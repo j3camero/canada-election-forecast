@@ -412,10 +412,13 @@ riding_titles = soup.find_all('h4')
 assert len(riding_titles) == len(tables)
 
 # Process each riding.
+ridings_with_local_poll_data = 0
+poll_counter = 0
 for riding_title, table in zip(riding_titles, tables):
     riding_name = riding_title.find('a').get_text()
     riding_number = RidingNameToNumber(riding_name)
     assert riding_number, 'No mapping for riding ' + riding_name
+    ridings_with_local_poll_data += 1
     region = RidingNumberToRegionCode(riding_number)
     rows = table.find_all('tr')
     header_row = rows[0]
@@ -457,6 +460,7 @@ for riding_title, table in zip(riding_titles, tables):
         age_years = age_days / 365.25
         weight = sample_size * (0.25 ** age_years)
         total_weight += weight
+        poll_counter += 1
         for party, support in poll_projection.items():
             if party not in weighted_projection:
                 weighted_projection[party] = 0
@@ -464,3 +468,5 @@ for riding_title, table in zip(riding_titles, tables):
     for party in weighted_projection:
         weighted_projection[party] /= total_weight
     projections_by_riding_number[str(riding_number)] = weighted_projection
+print 'ridings with local poll data:', ridings_with_local_poll_data
+print 'num polls:', poll_counter
