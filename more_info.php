@@ -24,6 +24,6 @@
   register to vote</a> online. It's fast and easy.</p>
 <p><a href="first_time_voters.html">First time voters and students, here's
   how to vote!</a></p>
-<div class="footnote">Projections updated Oct 6, 2015</div>
+<div class="footnote">Projections updated Oct 7, 2015</div>
 </body>
 </html>

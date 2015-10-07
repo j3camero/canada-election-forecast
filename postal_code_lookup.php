@@ -76,8 +76,15 @@ if (ValidateRidingNumber($riding_number)) {
 } else {
 ?>
 <p>
-  Couldn't find that postal code, sorry. Try
-  <a href="http://maps.google.com">looking it up</a> or
-  <a href="/">go back</a>.
+  Couldn't find that postal code, sorry. Here's some other options to find
+  what you need.
 </p>
+<ul>
+  <li>Look up your riding using
+    <a href="http://www.elections.ca/scripts/vis/FindED?L=e&PAGEID=20">
+    Elections Canada's lookup page</a>.</li>
+  <li>Try looking up your address or postal code using
+    <a href="http://maps.google.com">Google Maps</a>.</li>
+  <li>Go back to <a href="/">AnyoneButHarper.net Home</a>.</li>
+</ul>
 <?php } ?>
