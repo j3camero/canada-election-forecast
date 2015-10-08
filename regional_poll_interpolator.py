@@ -60,22 +60,16 @@ class RegionalPollInterpolator(object):
             projection[party] = begin_vector[party] + new_poll - old_poll
         return projection
 
-    def ProportionalSwingProjection(self, region, begin_date, begin_vector,
-                                    debug=False):
+    def ProportionalSwingProjection(self, region, begin_poll):
         """Projects forward a vector of popular votes."""
-        projection = {}
-        for party in begin_vector:
-            old_poll = self.Interpolate(region, party, begin_date)
+        end_poll = begin_poll.Copy()
+        for party, support in begin_poll.party_support.items():
+            old_poll = self.Interpolate(region, party, begin_poll.date)
             new_poll = self.GetMostRecent(region, party)
             if old_poll > 2:  # As in 2% not 200%.
                 gain = new_poll / old_poll
             else:
                 gain = 1
-            if debug:
-                print party, old_poll, new_poll, gain
-            projection[party] = begin_vector[party] * gain
-        # Normalize so the projections sum to 1.
-        divisor = sum(projection.values())
-        for k, v in projection.items():
-            projection[k] = v / divisor
-        return projection
+            end_poll.party_support[party] = support * gain
+        end_poll.NormalizeInPlace()
+        return end_poll

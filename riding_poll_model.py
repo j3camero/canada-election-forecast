@@ -4,6 +4,7 @@ import urllib2
 
 from bs4 import BeautifulSoup
 
+from poll import Poll
 from regional_poll_interpolator import RegionalPollInterpolator
 
 party_names = {
@@ -435,17 +436,11 @@ for riding_title, table in zip(riding_titles, tables):
             party_columns[column_title] = column_index
     assert date_column >= 0
     assert sample_size_column >= 0
-    weighted_projection = {}
+    raw_polls = []
     total_weight = 0
     data_rows = rows[1:]
     for row in data_rows:
         columns = row.find_all('td')
-        party_numbers = {}
-        for party_name, party_index in party_columns.items():
-            if party_index >= 0:
-                number_string = columns[party_index].get_text()
-                party_code = party_names[party_name]
-                party_numbers[party_code] = float(number_string) / 100
         date_string = columns[date_column].find('span', '').get_text()
         parsed_date = datetime.datetime.strptime(date_string, '%B %d, %Y')
         sample_size_string = columns[sample_size_column].get_text().strip()
@@ -453,20 +448,23 @@ for riding_title, table in zip(riding_titles, tables):
             sample_size = float(sample_size_string.replace(',', ''))
         else:
             sample_size = 0
-        poll_projection = interpolator.ProportionalSwingProjection(
-                              region, parsed_date, party_numbers)
-        age_seconds = (datetime.datetime.now() - parsed_date).total_seconds()
-        age_days = float(age_seconds) / (24 * 3600)
-        age_years = age_days / 365.25
-        weight = sample_size * (0.25 ** age_years)
-        total_weight += weight
+        raw_poll = Poll(parsed_date, sample_size, riding_number, riding_name)
+        for party_name, party_index in party_columns.items():
+            if party_index >= 0:
+                number_string = columns[party_index].get_text()
+                party_code = party_names[party_name]
+                raw_poll.party_support[party_code] = float(number_string) / 100
+        total_weight += raw_poll.CalculateRawWeight()
         poll_counter += 1
-        for party, support in poll_projection.items():
+        raw_polls.append(raw_poll)
+    weighted_projection = {}
+    for raw_poll in raw_polls:
+        projected = interpolator.ProportionalSwingProjection(region, raw_poll)
+        weight = raw_poll.CalculateRawWeight() / total_weight
+        for party, support in projected.party_support.items():
             if party not in weighted_projection:
                 weighted_projection[party] = 0
             weighted_projection[party] += weight * support
-    for party in weighted_projection:
-        weighted_projection[party] /= total_weight
     projections_by_riding_number[str(riding_number)] = weighted_projection
 print 'ridings with local poll data:', ridings_with_local_poll_data
 print 'num polls:', poll_counter
