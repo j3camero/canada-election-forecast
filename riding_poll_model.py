@@ -1,3 +1,4 @@
+import csv
 import datetime
 import re
 import urllib2
@@ -461,18 +462,37 @@ projections_by_riding_number = {}
 
 raw_polls_by_riding = FetchRidingPollsFromWikipedia()
 poll_count = 0
-for riding_number, raw_polls in raw_polls_by_riding.items():
-    region = RidingNumberToRegionCode(riding_number)
-    total_weight = sum(p.CalculateRawWeight() for p in raw_polls)
-    weighted = {}
-    for raw_poll in raw_polls:
-        projected = interpolator.ProportionalSwingProjection(region, raw_poll)
-        weight = raw_poll.CalculateRawWeight() / total_weight
-        for party, support in projected.party_support.items():
-            if party not in weighted:
-                weighted[party] = 0
-            weighted[party] += support * weight
-        poll_count += 1
-    projections_by_riding_number[riding_number] = weighted
+with open('riding_polls.csv', 'w') as csv_file:
+    csv_writer = csv.writer(csv_file)
+    party_order = ['cpc', 'ndp', 'lpc', 'gpc', 'bq', 'oth']
+    for riding_number, raw_polls in raw_polls_by_riding.items():
+        region = RidingNumberToRegionCode(riding_number)
+        total_weight = sum(p.CalculateRawWeight() for p in raw_polls)
+        weighted = {}
+        if len(raw_polls) > 0:
+            csv_writer.writerow([riding_number, '', '', 'Raw Polls',
+                                 '', '', '', '', '', 'After Swing'])
+            csv_writer.writerow(['Date', 'Sample Size', 'Weight'] +
+                                party_order + party_order)
+        for raw_poll in raw_polls:
+            projected = interpolator.ProportionalSwingProjection(region,
+                                                                 raw_poll)
+            weight = raw_poll.CalculateRawWeight() / total_weight
+            raw_ordered = [raw_poll.party_support.get(p, 0)
+                           for p in party_order]
+            proj_ordered = [projected.party_support.get(p, 0)
+                            for p in party_order]
+            csv_writer.writerow([raw_poll.date.strftime('%Y-%m-%d'),
+                                 raw_poll.sample_size, weight] +
+                                raw_ordered + proj_ordered)
+            for party, support in projected.party_support.items():
+                if party not in weighted:
+                    weighted[party] = 0
+                weighted[party] += support * weight
+            poll_count += 1
+        weighted_ordered = [weighted.get(p, 0) for p in party_order]
+        csv_writer.writerow(['Weighted', '-', '1'] + weighted_ordered)
+        csv_writer.writerow([])
+        projections_by_riding_number[riding_number] = weighted
 print 'ridings with local poll data:', len(projections_by_riding_number)
 print 'total num polls:', poll_count
