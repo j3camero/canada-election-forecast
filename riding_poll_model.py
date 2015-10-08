@@ -391,38 +391,7 @@ def DictVectorToString(vector):
         strings.append('%s %.2f' % (k, v))
     return ' '.join(strings)
 
-# The projections based on riding polls are stored in here, keyed by riding
-# number as a string.
-projections_by_riding_number = {}
-
-# Load the poll data interpolator.
-interpolator = RegionalPollInterpolator()
-interpolator.LoadFromCsv('regional_poll_averages.csv')
-interpolator.LoadFromCsv('regional_baseline.csv')
-
-# Download riding polls from Wikipedia.
-url = ('https://en.wikipedia.org/wiki/Opinion_polling_in_the_Canadian_' +
-       'federal_election,_2015_by_constituency')
-response = urllib2.urlopen(url)
-html = response.read()
-
-# Parse the HTML from Wikipedia to extract riding names and data tables.
-soup = BeautifulSoup(html, 'html.parser')
-tables = soup.find_all('table', 'wikitable sortable')
-riding_titles = soup.find_all('h4')
-assert len(riding_titles) == len(tables)
-
-# Process each riding.
-ridings_with_local_poll_data = 0
-poll_counter = 0
-for riding_title, table in zip(riding_titles, tables):
-    riding_name = riding_title.find('a').get_text()
-    riding_number = RidingNameToNumber(riding_name)
-    assert riding_number, 'No mapping for riding ' + riding_name
-    ridings_with_local_poll_data += 1
-    region = RidingNumberToRegionCode(riding_number)
-    rows = table.find_all('tr')
-    header_row = rows[0]
+def FindColumnHeaders(header_row):
     party_columns = {n: -1 for n in party_names}
     date_column = -1
     sample_size_column = -1
@@ -436,10 +405,13 @@ for riding_title, table in zip(riding_titles, tables):
             party_columns[column_title] = column_index
     assert date_column >= 0
     assert sample_size_column >= 0
-    raw_polls = []
-    total_weight = 0
-    data_rows = rows[1:]
-    for row in data_rows:
+    return date_column, sample_size_column, party_columns
+
+def ExtractPollsFromTable(table, riding_number, riding_name):
+    polls = []
+    rows = table.find_all('tr')
+    date_column, sample_size_column, party_columns = FindColumnHeaders(rows[0])
+    for row in rows[1:]:
         columns = row.find_all('td')
         date_string = columns[date_column].find('span', '').get_text()
         parsed_date = datetime.datetime.strptime(date_string, '%B %d, %Y')
@@ -448,23 +420,59 @@ for riding_title, table in zip(riding_titles, tables):
             sample_size = float(sample_size_string.replace(',', ''))
         else:
             sample_size = 0
-        raw_poll = Poll(parsed_date, sample_size, riding_number, riding_name)
+        poll = Poll(parsed_date, sample_size, riding_number, riding_name)
         for party_name, party_index in party_columns.items():
             if party_index >= 0:
                 number_string = columns[party_index].get_text()
+                support = float(number_string) / 100
                 party_code = party_names[party_name]
-                raw_poll.party_support[party_code] = float(number_string) / 100
-        total_weight += raw_poll.CalculateRawWeight()
-        poll_counter += 1
-        raw_polls.append(raw_poll)
-    weighted_projection = {}
+                poll.party_support[party_code] = support
+        polls.append(poll)
+    return polls
+
+def FetchRidingPollsFromWikipedia():
+    ridings = {}
+    url = ('https://en.wikipedia.org/wiki/Opinion_polling_in_the_Canadian_' +
+           'federal_election,_2015_by_constituency')
+    response = urllib2.urlopen(url)
+    html = response.read()
+    soup = BeautifulSoup(html, 'html.parser')
+    tables = soup.find_all('table', 'wikitable sortable')
+    riding_titles = soup.find_all('h4')
+    assert len(riding_titles) == len(tables)
+    ridings_with_local_poll_data = 0
+    poll_counter = 0
+    for riding_title, table in zip(riding_titles, tables):
+        riding_name = riding_title.find('a').get_text()
+        riding_number = RidingNameToNumber(riding_name)
+        assert riding_number, 'No mapping for riding ' + riding_name
+        ridings[riding_number] = ExtractPollsFromTable(table, riding_number,
+                                                       riding_name)
+    return ridings
+
+# Load the poll data interpolator.
+interpolator = RegionalPollInterpolator()
+interpolator.LoadFromCsv('regional_poll_averages.csv')
+interpolator.LoadFromCsv('regional_baseline.csv')
+
+# The projections based on riding polls are stored in here, keyed by riding
+# number as a string.
+projections_by_riding_number = {}
+
+raw_polls_by_riding = FetchRidingPollsFromWikipedia()
+poll_count = 0
+for riding_number, raw_polls in raw_polls_by_riding.items():
+    region = RidingNumberToRegionCode(riding_number)
+    total_weight = sum(p.CalculateRawWeight() for p in raw_polls)
+    weighted = {}
     for raw_poll in raw_polls:
         projected = interpolator.ProportionalSwingProjection(region, raw_poll)
         weight = raw_poll.CalculateRawWeight() / total_weight
         for party, support in projected.party_support.items():
-            if party not in weighted_projection:
-                weighted_projection[party] = 0
-            weighted_projection[party] += weight * support
-    projections_by_riding_number[str(riding_number)] = weighted_projection
-print 'ridings with local poll data:', ridings_with_local_poll_data
-print 'num polls:', poll_counter
+            if party not in weighted:
+                weighted[party] = 0
+            weighted[party] += support * weight
+        poll_count += 1
+    projections_by_riding_number[riding_number] = weighted
+print 'ridings with local poll data:', len(projections_by_riding_number)
+print 'total num polls:', poll_count
