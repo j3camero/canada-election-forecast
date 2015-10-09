@@ -63,6 +63,11 @@ provinces_by_numeric_code = {
     '62': 'NU',
 }
 
+nonexistent_candidates = {
+    '59014': ['gpc'],
+    '10004': ['gpc'],
+}
+
 def WhichParty(s):
     """If the given string contains a party name, return its abbreviation."""
     for abbreviation, long_name in party_long_names.items():
@@ -215,6 +220,9 @@ with open('riding_forecasts.csv', 'wb') as csv_file:
         # Upgrade the projections for ridings that have local polling data.
         projections = riding_poll_model.projections_by_riding_number.get(
                           riding_number, projections)
+        for party in nonexistent_candidates.get(riding_number, []):
+            projections[party] = 0
+        projections = NormalizeDictVector(projections)
         ordered_projections = [projections.get(p, 0) for p in party_order]
         projected_winner = KeyWithHighestValue(projections)
         runner_up = KeyWithHighestValue(projections, [projected_winner])
