@@ -15,7 +15,8 @@ class Poll(object):
         age_seconds = (current_date - self.date).total_seconds()
         age_days = float(age_seconds) / (24 * 3600)
         age_years = age_days / 365.25
-        return self.sample_size * (0.25 ** age_years)
+        #return self.sample_size * (0.25 ** age_years)
+        return self.sample_size
 
     def Copy(self):
         """Makes a deep copy of this poll object."""

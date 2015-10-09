@@ -416,6 +416,10 @@ def ExtractPollsFromTable(table, riding_number, riding_name):
         columns = row.find_all('td')
         date_string = columns[date_column].find('span', '').get_text()
         parsed_date = datetime.datetime.strptime(date_string, '%B %d, %Y')
+        age_seconds = (datetime.datetime.now() - parsed_date).total_seconds()
+        age_days = float(age_seconds) / 86400
+        if age_days > 21:
+            continue
         sample_size_string = columns[sample_size_column].get_text().strip()
         if sample_size_string:
             sample_size = float(sample_size_string.replace(',', ''))
@@ -469,11 +473,12 @@ with open('riding_polls.csv', 'w') as csv_file:
         region = RidingNumberToRegionCode(riding_number)
         total_weight = sum(p.CalculateRawWeight() for p in raw_polls)
         weighted = {}
-        if len(raw_polls) > 0:
-            csv_writer.writerow([riding_number, '', '', 'Raw Polls',
-                                 '', '', '', '', '', 'After Swing'])
-            csv_writer.writerow(['Date', 'Sample Size', 'Weight'] +
-                                party_order + party_order)
+        if len(raw_polls) == 0 or total_weight == 0:
+            continue
+        csv_writer.writerow(['Riding:', riding_number, '', 'Raw Polls',
+                             '', '', '', '', '', 'After Swing'])
+        csv_writer.writerow(['Date', 'Sample Size', 'Weight'] +
+                            party_order + party_order)
         for raw_poll in raw_polls:
             projected = interpolator.ProportionalSwingProjection(region,
                                                                  raw_poll)
