@@ -1,31 +1,10 @@
 <?php
-$province_names = [
-    "AB" => "Alberta",
-    "BC" => "British Columbia",
-    "MB" => "Manitoba",
-    "NB" => "New Brunswick",
-    "NL" => "Newfoundland &amp; Labrador",
-    "NS" => "Nova Scotia",
-    "NT" => "Northwest Territories",
-    "NU" => "Nunavut",
-    "ON" => "Ontario",
-    "PE" => "Prince Edward Island",
-    "QC" => "Qu&eacute;bec",
-    "SK" => "Saskatchewan",
-    "YT" => "Yukon",
-];
-$province_code = mysql_escape_string($_GET["province"]);
-if (strlen($province_code) != 2 || !ctype_alpha($province_code) ||
-    !array_key_exists($province_code, $province_names)) {
-    header("Location: http://anyonebutharper.net");
-    die();
-}
-$province_name = $province_names[$province_code];
+$group_name = mysql_escape_string($_GET["group_name"]);
 ?>
 <html>
 <head>
-  <title>AnyoneButHarper.net - <?php echo $province_name; ?></title>
-  <meta name="description" content="Strategic voting guide for <?php echo $province_name; ?>. Anyone but Harper!" />
+  <title>AnyoneButHarper.net - <?php echo $group_name; ?></title>
+  <meta name="description" content="Strategic voting guide for <?php echo $group_name; ?>. Anyone but Harper!" />
   <meta charset="ISO-8859-1">
   <link rel="stylesheet" type="text/css" href="style.css">
 </head>
@@ -39,7 +18,7 @@ $province_name = $province_names[$province_code];
   ga('send', 'pageview');
 </script>
 <div class="provincetitle">Canada Election 2015 &mdash;
-  <?php echo $province_name; ?></div>
+  <?php echo $group_name; ?></div>
 <p>Back to <a href="/">AnyoneButHarper.net</a> home.</p>
 <p>Visit Elections Canada to
   <a href="http://www.elections.ca/scripts/vis/FindED?L=e&PAGEID=20">
@@ -57,8 +36,10 @@ $province_name = $province_names[$province_code];
 <?php
 $party_order = ["con", "lib", "ndp", "grn", "bq", "oth"];
 require_once 'database.php';
-$result = query("SELECT * FROM ridings WHERE province = '$province_code' " .
-                "ORDER BY name");
+$result = query("SELECT ridings.* " .
+                "FROM riding_groups INNER JOIN ridings " .
+                "ON riding_groups.riding_number = ridings.number " .
+                "WHERE group_name = '$group_name' ORDER BY name");
 while ($row = mysql_fetch_assoc($result)) {
     $province = $row["province"];
     $name = $row["name"];
