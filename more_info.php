@@ -22,8 +22,6 @@
 <p>
   You can <a href="http://www.elections.ca/content.aspx?section=vot&dir=reg&document=index&lang=e">
   register to vote</a> online. It's fast and easy.</p>
-<p><a href="first_time_voters.html">First time voters and students, here's
-  how to vote!</a></p>
 <div class="footnote">Projections updated Oct 9, 2015</div>
 </body>
 </html>
