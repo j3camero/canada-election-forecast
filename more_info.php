@@ -22,6 +22,7 @@
 <p>
   You can <a href="http://www.elections.ca/content.aspx?section=vot&dir=reg&document=index&lang=e">
   register to vote</a> online. It's fast and easy.</p>
-<div class="footnote">Projections updated Oct 9, 2015</div>
+<div class="footnote">Projections updated
+  <?php include 'update_date.php'; ?></div>
 </body>
 </html>

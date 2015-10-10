@@ -42,7 +42,8 @@ SqlBarChart("SELECT winner, COUNT(*) AS seat_count FROM " .
 <p>
   You can <a href="http://www.elections.ca/content.aspx?section=vot&dir=reg&document=index&lang=e">
   register to vote</a> online. It's fast and easy.</p>
-<div class="footnote">Projections updated Oct 9, 2015</div>
+<div class="footnote">Projections updated
+  <?php include 'update_date.php'; ?></div>
 <div class="provincetitle">Strategic Vote Lookup for All 338 Federal Ridings
 </div>
 <p>Visit Elections Canada to
