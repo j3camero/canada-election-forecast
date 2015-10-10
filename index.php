@@ -7,6 +7,7 @@ require_once 'barchart.php';
   <title>AnyoneButHarper.net</title>
   <meta name="description" content="Strategic voting guide for the 2015 Canadian federal election. Anyone but Harper!" />
   <meta charset="ISO-8859-1">
+  <!-- <meta name=viewport content="width=device-width, initial-scale=1"> -->
   <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
@@ -18,6 +19,9 @@ require_once 'barchart.php';
   ga('create', 'UA-67491457-1', 'auto');
   ga('send', 'pageview');
 </script>
+<?php
+//include 'navbar.php';
+?>
 <div class="provincetitle">Canada Election 2015</div>
 <p>If the election were held today, these are the projected seat counts
   based on the latest polls.</p>
