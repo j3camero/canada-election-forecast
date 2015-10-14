@@ -425,7 +425,10 @@ def ExtractPollsFromTable(table, riding_number, riding_name):
         for party_name, party_index in party_columns.items():
             if party_index >= 0:
                 number_string = columns[party_index].get_text()
-                support = float(number_string) / 100
+                try:
+                    support = float(number_string) / 100
+                except:
+                    support = 0
                 party_code = party_names[party_name]
                 poll.party_support[party_code] = support
         polls.append(poll)
