@@ -1,0 +1,131 @@
+.con {
+    color: #2360B1;
+}
+.lib {
+    color: D71920;
+}
+.ndp {
+    color: F37021;
+}
+.grn {
+    color:  #2F873E;
+}
+.bq {
+    color: lightskyblue;
+}
+.oth {
+    color: #777;
+}
+.con-proj {
+    background-color: #2360B1;
+}
+.lib-proj {
+    background-color: D71920;
+}
+.ndp-proj {
+    background-color: F37021;
+}
+.grn-proj {
+    background-color:  #2F873E;
+}
+.bq-proj {
+    background-color: lightskyblue;
+}
+.oth-proj {
+    background-color: #777;
+}
+.estimate {
+    float: left;
+    font-weight: bold;
+    text-align: center;
+    width: 50px;
+}
+.riding {
+    color: #777;
+    font-size: 18px;
+    padding: 15px 0px;
+    text-align: center;
+    width: 100%;
+}
+.ridingname {
+    float: left;
+    text-align: right;
+    width: 50%;
+}
+a.ridingname {
+    color: #777;
+    text-decoration: none;
+}
+a.ridingname:hover {
+    text-decoration: underline;
+}
+.sequence {
+    float: right;
+    text-align: left;
+    width: 50%;
+}
+.provincetitle {
+    display: inline-block;
+    font-size: 26px;
+    padding-top: 15px;
+}
+.projection {
+    float: left;
+    font-size: 14;
+    font-weight: bold;
+    text-align: center;
+    width: 50px;
+    color: white;
+}
+.strategic {
+    font-weight: 900;
+    text-decoration: underline;
+}
+.footnote {
+    font-size: 14;
+    font-style: oblique;
+    padding-top: 20px;
+}
+.barchart {
+    margin-left: 10px;
+}
+body {
+    color:#777;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
+    text-align: center;
+}
+p {
+    margin: auto;
+    max-width: 600;
+    padding-top: 8px;
+}
+#postal_code {
+    color:#777;
+    font-family: 'Roboto', sans-serif;
+    font-size: 26;
+    font-weight: 300;
+    padding: 10px;
+    text-align: center;
+}
+#submit_button {
+    color:#777;
+    font-family: 'Roboto', sans-serif;
+    font-size: 26;
+    font-weight: 300;
+    padding: 10px;
+    text-align: center;
+}
+.navbar {
+    background-color: #333;
+}
+a.menuitem {
+    color: white;
+    display: inline-block;
+    font-weight: bold;
+    padding: 10px;
+    text-decoration: none;
+}
+a.menuitem:hover {
+    color: #BBB;
+}
